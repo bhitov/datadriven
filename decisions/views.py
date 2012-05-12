@@ -2,10 +2,39 @@
 
 from django.shortcuts import render
 import urllib2
+import json
+from models import County
 
 
 def rank_locations(request):
-    
+    # Parse the JSON
+    objs = json.loads(request.POST)
+    data = []
+    for address in objs.get('addresses', []):
+        try:
+            location = 'POINT(' + address['location'].replace(',', '') + ')'
+            county = County.objects.get(mpoly__contains=location)
+            data.append(county)
+        except Exception as e:
+            print e
+
+
+
+    #    {
+    #    "addresses": [
+    #            {
+    #            "address": "dfgdf",
+    #            "location": "-71, 42"
+    #        }
+    #    ],
+    #    "slider1": 3,
+    #    "slider2": 3,
+    #    "slider3": 3,
+    #    "slider4": 3
+    #}
+
+
+
 
 
 

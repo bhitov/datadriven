@@ -1,5 +1,6 @@
 
 from django.contrib.gis.db import models
+from django.contrib.gis import admin
 
 # Create your models here.
 
@@ -26,3 +27,6 @@ class County(models.Model):
     air_pol = models.IntegerField(null=True)
     recfac = models.IntegerField(null=True)
     foodhealth = models.IntegerField(null=True)
+
+
+admin.site.register(County, admin.GeoModelAdmin)
