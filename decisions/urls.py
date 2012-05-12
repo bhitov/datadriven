@@ -6,6 +6,7 @@ urlpatterns = patterns('',
     # Examples:
     #url(r'^$', 'datadriven.views.home', name='home'),
     (r'^$', 'django.views.generic.simple.direct_to_template', {'template': 'base.html'}),
+    (r'^google/', 'decisions.views.google_maps')
 
     #url(r'^decisions/', include('datadriven.decisions.urls')),
 
