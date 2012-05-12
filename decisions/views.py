@@ -4,6 +4,14 @@ from django.shortcuts import render
 import urllib2
 
 
+def rank_locations(request):
+    
+
+
+
+    pass
+
+
 def google_maps(request):
 
     get_str = request.GET
