@@ -29,10 +29,10 @@
         <h1>Data Driven</h1>
 
 
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped" style="margin-right: 6px;">
             <colgroup>
-                <col class="span4">
-                <col class="span4">
+                <col class="span1" style="width: 45%">
+                <col class="span1" style="width: 45%">
             </colgroup>
             <tbody>
             <tr>
@@ -103,6 +103,12 @@
         <button class="btn" onclick="switch_to_field('air_pol');">
             Air polution
         </button>
+        <button class="btn" onclick="switch_to_field('recfac');">
+            Recreational facilities
+        </button>
+        <button class="btn" onclick="switch_to_field('foodhealth');">
+            Food health
+        </button>
 
 
     </div>
@@ -121,7 +127,6 @@
            var map = new L.Map('map');
 
            var key = "ea4b084a4a3c4c1e99d7c36e2548b17a".toUpperCase();
-           console.log("key: " + key);
 
            var cloudmade = new L.TileLayer('http://{s}.tile.cloudmade.com/' +
                    key + '/997/256/{z}/{x}/{y}.png', {
@@ -142,20 +147,22 @@
 
            // Handle opacity and keep track of active layers
            counties.on('featureparse', function(e) {
-               console.log("layer:");
-               console.log(e.layer);
                var layer = e.layer;
                var properties = e.properties;
                set_county_style(layer, properties);
                layer.on('mouseover', function(e) {
-                   console.log("woohoo!");
-                   console.log(e);
-                   console.log(layer);
-                   display_county_data(properties);
+                   display_county_data(layer, properties);
+
                });
+
+               layer.on('mouseout', function() {
+                   deselect_county(layer);
+               });
+
 
                active_layer_list.push([layer, properties]);
            });
+
 
 
            // Handle style changes if the active field changes
@@ -179,25 +186,45 @@
                },
                'air_pol' : {
                    color: "#254117"
+               },
+               'recfac' : {
+                   color: "#FBB917"
+               },
+               'foodhealth' : {
+                   color: "#FF0000"
                }
            };
 
            var county_fields = ['state_name', 'name', 'poor_health_days',
                'num_pcps', 'air_pol', 'recfac', 'foodhealth'];
            // Updates the data display
-           function display_county_data(properties) {
+           function display_county_data(layer, properties) {
 
                for (var i=0; i < county_fields.length; i++) {
                    var field = county_fields[i];
                    $('#county_' + field).text(properties[field]);
                }
+
+               layer.setStyle({
+                   weight: 5
+               });
+
+
+           }
+
+           function deselect_county(layer) {
+               layer.setStyle({
+                   weight: 1
+               });
+               layer.off('mouseout', deselect_county);
            }
 
            // Create the style of a county layer based on its properties
            function set_county_style(layer, properties) {
                layer.setStyle({
                    color: county_field_styles[active_field]['color'],
-                   fillOpacity: properties[active_field]/5.
+                   fillOpacity: properties[active_field]/5.,
+                   weight: 1.
                })
            }
 
@@ -206,8 +233,6 @@
            function county_refresh() {
                var url = '/decisions/county.json?bbox=' + map.getBounds().toBBoxString();
                $.getJSON(url, function(data) {
-                   console.log(data);
-                   console.log(county_ids);
 
                    $.each(data.features, function(i, feature) {
                        if ($.inArray(feature.id, county_ids) == -1) {

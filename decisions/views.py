@@ -17,7 +17,6 @@ def location_list(request):
 
     # fetch counties
     counties = County.objects.filter(mpoly__intersects=poly)
-    print "found counties:", counties
 
     # convert to geojson
     geojson_dict = {
@@ -30,8 +29,6 @@ def location_list(request):
     # return response
     return HttpResponse(json.dumps(geojson_dict),
                             content_type='application/json')
-
-    pass
 
 def county_to_geojson(county):
     # poor_health_days num_pcps air_pol recfac foodhealth
@@ -49,12 +46,10 @@ def county_to_geojson(county):
         },
         "id": county.fips
     }
-    print "gj_dict: ", geojson_dict
     return geojson_dict
 
 @csrf_exempt
 def rank_locations(request):
-    print "IN RANK"
     # Parse the JSON
     print request.POST
     print request.POST.get('loc_data')
