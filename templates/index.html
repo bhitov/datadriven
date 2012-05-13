@@ -1,0 +1,136 @@
+
+<!-- saved from url=(0059)http://ec2-107-20-98-255.compute-1.amazonaws.com/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script><style type="text/css"></style>
+	<link rel="stylesheet" type="text/css" href="./index_files/jquery.ui.all.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script>
+	<script src="./index_files/json2.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	var inputAddressId = 0;
+	function removeInputAddress(num) {
+		jQuery('#container' + num).remove();
+	}
+	function createInputAddress() {
+		var html=
+		"<div class='container' id='container" + inputAddressId + "'><input id='address" + inputAddressId + "' class='geocode' type='text'></input> Location: <span class='location' id='location" + inputAddressId + "'></span><a href='#' onclick='removeInputAddress(" + inputAddressId + ");'>Remove</a></div>";
+		inputAddressId += 1;
+
+		return html;
+	}
+
+	function doSubmit() {
+		var addresses = [];
+		jQuery('.container').each(function(index){
+			var text = jQuery(this).children('.geocode').first().val();
+			var loc = jQuery(this).children('.location').first().text();
+
+			if (loc) {
+				addresses.push({'address': text, 'location': loc});
+			}
+		});
+
+		var data = {
+			'addresses' : addresses,
+			'slider1': jQuery('#slider1').slider("value"),
+			'slider2': jQuery('#slider2').slider("value"),
+			'slider3': jQuery('#slider3').slider("value"),
+			'slider4': jQuery('#slider4').slider("value"),
+			'slider5': jQuery('#slider5').slider("value")
+		};
+		//alert(JSON.stringify(data, null, 2));
+		jQuery("#userInput").val(JSON.stringify(data));
+
+		jQuery("#userInputForm").submit();
+	}
+
+	jQuery(document).ready(function(){
+		jQuery('#address_container').append(createInputAddress());
+		jQuery('#address_container').append(createInputAddress());
+		jQuery('#address_container').append(createInputAddress());
+		jQuery('#address_container').append(createInputAddress());
+
+		jQuery('.geocode').on("change", function(event){
+			var id = jQuery(this).attr('id');
+			//jQuery.getJSON(
+			//'http://maps.google.com/maps/geo?output=csv&q=' + jQuery(this).val(),
+			//function(data) {
+				jQuery('#' + id.replace('address', 'location')).html("-71, 42");
+			//}
+			//);
+		});
+		jQuery('#slider1').slider({min: 1, max: 5, value: 3});
+		jQuery('#slider2').slider({min: 1, max: 5, value: 3});
+		jQuery('#slider3').slider({min: 1, max: 5, value: 3});
+		jQuery('#slider4').slider({min: 1, max: 5, value: 3});
+		jQuery('#slider5').slider({min: 1, max: 5, value: 3});
+
+//		jQuery('#submit').click(doSubmit);
+		jQuery('#submit').on('click', pstuff);
+
+//        jQuery()
+	});
+
+    function pstuff(e) {
+        e.preventDefault();
+        var dat = [];
+        var yy = jQuery('#address_container .container').each( function() {
+            var txt = jQuery(this).text();
+
+//            txt = "Location: -71.3432, 42Remove";
+
+            if (txt.match(/[0-9]/)) {
+                console.log('start');
+                console.log(txt);
+                var thng = txt.match(/((\-)?\d+)(\.(\d)*)?/g);
+                console.log("This is what I found:");
+                console.log(thng);
+                console.log("yay");
+                var output = String(thng[0]) + " " + String(thng[1]);
+                dat.push(output);
+            }
+        });
+        console.log(dat);
+        var xx = dat;
+
+        console.log("AHHHH");
+        console.log(xx);
+        var realout = { 'json' : JSON.stringify({'loc_data' : xx})};
+        console.log("realout:");
+        console.log(realout);
+        jQuery.post("/decisions/rank/", realout, function(data) {
+            console.log("data:");
+            console.log(data);
+        });
+
+
+    }
+	</script>
+</head>
+<body>
+	<table>
+		<tbody><tr>
+			<td>
+	<div id="address_container">
+	<div class="container" id="container0"><input id="address0" class="geocode" type="text"> Location: <span class="location" id="location0"></span><a href="/decisions/rank" onclick="removeInputAddress(0);">Remove</a></div><div class="container" id="container1"><input id="address1" class="geocode" type="text"> Location: <span class="location" id="location1"></span><a href="/decisions/rank" onclick="removeInputAddress(1);">Remove</a></div><div class="container" id="container2"><input id="address2" class="geocode" type="text"> Location: <span class="location" id="location2"></span><a href="/decisions/rank" onclick="removeInputAddress(2);">Remove</a></div><div class="container" id="container3"><input id="address3" class="geocode" type="text"> Location: <span class="location" id="location3"></span><a href="/decisions/rank" onclick="removeInputAddress(3);">Remove</a></div></div>
+	<a id="add_address" href="/decisions/rank/" onclick="jQuery(&#39;#address_container&#39;).append(createInputAddress())">Add</a>
+			</td>
+			<td width="400px;">
+
+<div class="data_and_slider"> Absenteeism due to Health <div id="slider1" <="" div="" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"> <a class="ui-slider-handle ui-state-default ui-corner-all" href="/decisions/rank" style="left: 50%; "></a></div>
+<div class="data_and_slider"> Primary Cary Physicians <div id="slider2" <="" div="" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"> <a class="ui-slider-handle ui-state-default ui-corner-all" href="/decisions/rank" style="left: 50%; "></a></div>
+<div class="data_and_slider"> Air Pollution <div id="slider3" <="" div="" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"> <a class="ui-slider-handle ui-state-default ui-corner-all" href="/decisions/rank" style="left: 50%; "></a></div>
+<div class="data_and_slider"> Access to Recreational Facilities <div id="slider4" <="" div="" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"> <a class="ui-slider-handle ui-state-default ui-corner-all" href="/decisions/rank" style="left: 50%; "></a></div>
+<div class="data_and_slider"> Access to Healthy Foods <div id="slider5" <="" div="" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"> <a class="ui-slider-handle ui-state-default ui-corner-all" href="/decisions/rank" style="left: 50%; "></a></div>
+			</div></div></div></div></div></td>
+		</tr>
+	</tbody></table>
+
+	<form id="userInputForm" name="userInputForm" action="/decisions/rank/" method="post">
+		<input type="hidden" id="userInput" name="userInput">
+	</form>
+	<a id="submit" href="/decisions/rank">Rank it!</a>
+
+
+</body></html>

@@ -28,5 +28,9 @@ class County(models.Model):
     recfac = models.IntegerField(null=True)
     foodhealth = models.IntegerField(null=True)
 
+    # poor_health_days num_pcps air_pol recfac foodhealth
+    def __unicode__(self):
+        return self.name
+
 
 admin.site.register(County, admin.GeoModelAdmin)

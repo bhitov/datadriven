@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maps testing</title>
+
+    <link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css" />
+
+    <style type="text/css">
+        body { height:100% }
+        #map { display:block; position:absolute; top:0; left:0;
+            width:70%; height:100%; }
+        .data {
+            opacity: 1;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30%;
+            height: 100%;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="data" class="span2 data">
+
+        <h1>Data Driven</h1>
+
+
+        <table class="table table-bordered table-striped">
+            <colgroup>
+                <col class="span4">
+                <col class="span4">
+            </colgroup>
+            <tbody>
+            <tr>
+                <td>
+                    State
+                </td>
+                <td id="county_state_name">
+                    Wrap
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    County
+                </td>
+                <td id="county_name">
+                    Wrap
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Poor health days
+                </td>
+                <td id="county_poor_health_days">
+                    Cont
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Number of PCPs
+                </td>
+                <td id="county_num_pcps">
+                    Cont
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Air polution
+                </td>
+                <td id="county_air_pol">
+                    Cont
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Recreational facilities
+                </td>
+                <td id="county_recfac">
+                    Defa
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Food health
+                </td>
+                <td id="county_foodhealth">
+                    Special
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <button class="btn" onclick="switch_to_field('poor_health_days');">
+            Poor health days
+        </button>
+        <button class="btn" onclick="switch_to_field('num_pcps');">
+            Number of PCPs
+        </button>
+        <button class="btn" onclick="switch_to_field('air_pol');">
+            Air polution
+        </button>
+
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js" type="text/javascript"></script>
+    <script src="/static/js/leaflet.js"></script>
+
+    <script type="text/javascript">
+
+       $(document).ready(function () {
+
+           // colors based on property
+           //var
+
+
+           var map = new L.Map('map');
+
+           var key = "ea4b084a4a3c4c1e99d7c36e2548b17a".toUpperCase();
+           console.log("key: " + key);
+
+           var cloudmade = new L.TileLayer('http://{s}.tile.cloudmade.com/' +
+                   key + '/997/256/{z}/{x}/{y}.png', {
+               attribution: "Map data &copy; derp",
+               maxZoom: 18
+           });
+
+           var boston = new L.LatLng(42.21, -71.5);
+           map.setView(boston, 11).addLayer(cloudmade);
+
+           var counties = new L.GeoJSON();
+           var county_ids = new Array();
+
+           // Keep track of displayed layers for easier color switching
+           var active_layer_list = [];
+
+           map.addLayer(counties);
+
+           // Handle opacity and keep track of active layers
+           counties.on('featureparse', function(e) {
+               console.log("layer:");
+               console.log(e.layer);
+               var layer = e.layer;
+               var properties = e.properties;
+               set_county_style(layer, properties);
+               layer.on('mouseover', function(e) {
+                   console.log("woohoo!");
+                   console.log(e);
+                   console.log(layer);
+                   display_county_data(properties);
+               });
+
+               active_layer_list.push([layer, properties]);
+           });
+
+
+           // Handle style changes if the active field changes
+           window.switch_to_field = function(field) {
+               active_field = field;
+               for(var i = active_layer_list.length-1; i >= 0; i--) {
+                   var layer_data = active_layer_list[i];
+                   set_county_style(layer_data[0], layer_data[1])
+               }
+           };
+
+           function county_tooltip () {}
+
+           var active_field = 'poor_health_days';
+           var county_field_styles = {
+               'poor_health_days' : {
+                   color: "#F778A1"
+               },
+               'num_pcps' : {
+                   color: "#736AFF"
+               },
+               'air_pol' : {
+                   color: "#254117"
+               }
+           };
+
+           var county_fields = ['state_name', 'name', 'poor_health_days',
+               'num_pcps', 'air_pol', 'recfac', 'foodhealth'];
+           // Updates the data display
+           function display_county_data(properties) {
+
+               for (var i=0; i < county_fields.length; i++) {
+                   var field = county_fields[i];
+                   $('#county_' + field).text(properties[field]);
+               }
+           }
+
+           // Create the style of a county layer based on its properties
+           function set_county_style(layer, properties) {
+               layer.setStyle({
+                   color: county_field_styles[active_field]['color'],
+                   fillOpacity: properties[active_field]/5.
+               })
+           }
+
+
+
+           function county_refresh() {
+               var url = '/decisions/county.json?bbox=' + map.getBounds().toBBoxString();
+               $.getJSON(url, function(data) {
+                   console.log(data);
+                   console.log(county_ids);
+
+                   $.each(data.features, function(i, feature) {
+                       if ($.inArray(feature.id, county_ids) == -1) {
+                           // not a duplicate
+                           counties.addGeoJSON(feature);
+                           county_ids.push(feature.id);
+
+                       }
+                   });
+
+               });
+           }
+
+           map.on('moveend', county_refresh);
+
+           county_refresh();
+
+
+
+
+       });
+    </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
