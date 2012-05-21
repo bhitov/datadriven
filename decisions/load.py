@@ -1,7 +1,7 @@
 __author__ = 'ben'
 import os
 from django.contrib.gis.utils import LayerMapping
-from models import County
+from models import County, Metric, MetricValue
 import csv
 
 county_mapping = {
@@ -20,13 +20,7 @@ def run(verbose=True):
     lm.save(strict=True, verbose=verbose)
 
 county_csv = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data/CountyHealthText.csv'))
-#['FIPS', 'STATE', 'COUNTY', 'POORHLTH', 'PCP', 'AIRPOL', 'RECFAC', 'FOODHLTH']
-#poor_health_days = models.IntegerField(null=True)
-#num_pcps = models.IntegerField(null=True)
-#air_pol = models.IntegerField(null=True)
-#recfac = models.IntegerField(null=True)
-#foodhealth = models.IntegerField(null=True)
-# os.path.abspath(os.path.join(os.path.dirname(__file__), 'data/UScounties.shp'))
+
 def load_csv():
     c = csv.reader(open(county_csv, 'r'))
     c.next()
@@ -43,5 +37,26 @@ def load_csv():
         except Exception as e:
             print e
 
+def metric_abstraction_migration():
+
+    metric_name_data = {
+        'poor_health_days': ['poor_health_days', 'Poor health days', 'filler'],
+        'num_pcps' : ['pcp_availability', 'Number of PCPs', 'Number of primary care physicians'],
+        'air_pol' : ['air_pollution', 'Air polution', 'Air polution'],
+        'recfac' : ['recreational_facilities', 'Recreational facilities', 'Availability of recreational facilities'],
+        'foodhealth' : ['food_health', 'Food health', 'Availability of healthy food']
+    }
+
+    counties = County.objects.all()
+    for metric_name in metric_name_data:
+        data = metric_name_data[metric_name]
+        metric = (Metric.objects.create(name=data[0], verbose_name=data[1],
+                                        description=data[2]))
+        print "created Metric: ", metric
+        for county in counties:
+            metric_value = getattr(county, metric_name)
+            if metric_value is not None:
+                m = MetricValue.objects.create(metric=metric, county=county, value=metric_value)
+                print "created MetricValue: ", m
 
 
